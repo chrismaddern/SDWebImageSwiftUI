@@ -55,14 +55,13 @@ public struct WebImage : View {
     }
     
     public var body: some View {
-        // This solve the case when WebImage created with new URL, but `onAppear` not been called, for example, some transaction indeterminate state, SwiftUI :)
-        if imageManager.isFirstLoad {
-            imageManager.load()
-        }
         return Group {
             if let image = imageManager.image {
                 if isAnimating && !imageManager.isIncremental {
                     setupPlayer()
+                    .onAppear(perform: {
+                        imageManager.load()
+                    })
                     .onPlatformAppear(appear: {
                         self.imagePlayer.startPlaying()
                     }, disappear: {
@@ -78,12 +77,21 @@ public struct WebImage : View {
                 } else {
                     if let currentFrame = imagePlayer.currentFrame {
                         configure(image: currentFrame)
+                        .onAppear(perform: {
+                            imageManager.load()
+                        })
                     } else {
                         configure(image: image)
+                        .onAppear(perform: {
+                            imageManager.load()
+                        })
                     }
                 }
             } else {
                 setupPlaceholder()
+                .onAppear(perform: {
+                        imageManager.load()
+                    })
                 .onPlatformAppear(appear: {
                     // Load remote image when first appear
                     if self.imageManager.isFirstLoad {
